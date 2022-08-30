@@ -1,0 +1,555 @@
+openapi: 3.0.0
+info:
+  title: API for independant issue ticket system
+  description: API flow for raiseing, tracking and getting specific information regaring the issue raised and order related to that issue.
+  version: 1.0.0
+
+paths:
+  /reason/:
+    get:
+      tags:
+        - Reason
+      description: Fetch all the reasons.
+      responses:
+        '200':
+          description: Reason list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReasonResponse'
+        '400':
+          description: Invalid ID supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Issue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway Time Out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth:
+          - read:issue
+  /issue/raise:
+    post:
+      tags:
+        - Issue
+      description: Raise an issue for a particular Order ID
+      requestBody:
+        description: Buyer raise an issue for a specific order
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssuePostReq'
+      responses:
+        '202':
+          description: Acknowledgement of message received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: 7765
+                        description: response code
+                      status:
+                        type: string
+                        enum:
+                          - ACK
+                          - NACK
+                        example: ACK
+                        description: response status
+                    required:
+                      - code
+                      - status
+                required:
+                  - message
+        '400':
+          description: Invalid Order ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway Time Out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      callbacks:
+        issueraise:
+          '{$request.body.callback_url}/issue':
+            post:
+              summary: 'Issue raised against an order'
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/IssuePostReq'
+              responses:
+                200:
+                  description: 'Issue successfully raised'
+                  content:
+                    text/plain:
+                      examples:
+                        success:
+                          value: true
+      security:
+        - BearerAuth:
+          - write:issue
+        - api_key: []
+  /issue/track/:
+    get:
+      tags:
+        - Issue
+      description: Fetch all the issue raised by the user.
+      responses:
+        '200':
+          description: Issue list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllIssueTrackResponse'
+        '400':
+          description: Invalid ID supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Issue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway Time Out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth:
+          - read:issue
+  /issue/track/{issue_id}:
+    get:
+      tags:
+        - Issue
+      description: Get details for the specific raised issue.
+      parameters:
+        - name: issue_id
+          in: path
+          description: ID of issue to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Status of the Issue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueTrackResponse'
+        '400':
+          description: Invalid ID supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Issue not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '405':
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway Time Out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - BearerAuth:
+          - read:issue
+components:
+  schemas:
+    Reason:
+      description: Describes the reasons of issue
+      type: object
+      properties:
+        reason_id:
+          type: string
+          description: Unique identifier for reason schema
+          example: 101
+        reason:
+          type: string
+          description: Reason to be specified
+          enum:
+            - damaged-during-shipping
+            - product-arrived-too-late
+            - customer-no-longer-needed-the-product
+            - product-did-not-match-the-description
+          example: damaged-during-shipping
+    Order:
+      description: Describes the details of an order
+      type: object
+      properties:
+        order_id:
+          type: string
+          description: Unique identifier for Order schema
+          example: 191
+        state:
+          type: string
+          enum:
+            - CREATED
+            - PACKED
+            - SHIPPED
+            - OUT fOR DELIVERY
+            - DELIVERED
+            - RTO INITIATED
+            - RTO DELIVERED
+            - CANCELLED
+          description: Order state
+          example: CREATED
+        created_at:
+          type: string
+          format: date-time
+          description: created at date
+          example: '2022-08-30T17:22:38'
+        updated_at:
+          type: string
+          format: date-time
+          description: updated at date
+          example: '2022-08-30T17:22:38'
+    Issue:
+      type: object
+      properties:
+        issue_id:
+          type: integer
+          format: int64
+          example: 5466654433
+          description: unique issue id
+        timestamp:
+          type: string
+          format: date-time
+          example: '2022-08-30T17:22:38'
+          description: timestamp for issue
+        issue_status:
+          type: string
+          description: Issue Status
+          example: ACKNOWLEDGE
+          enum:
+            - ACKNOWLEDGE
+            - FULFILLED
+            - DECLINED
+            - IN_PROGRESS
+            - RETURN_INITIATED
+            - RETURN_INPROGRESS
+            - RETURN_COMPLETED
+            - RETURN_DECLINED
+            - REFUND_INITIATED
+            - REFUND_INPROGRESS
+            - REFUND_COMPLETED
+            - REFUND_DECLINED
+        issue_message:
+          type: string
+          description: message description the issue
+          example: 'this item is defecitve'
+        request_for:
+          type: string
+          description: request constants
+          enum:
+            - REFUND
+            - RETURN
+          example: REFUND
+    Error:
+      description: Describes an error object
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - CONTEXT_ERROR
+                - DOMAIN_ERROR
+                - POLICY_ERROR
+                - JSON_SCHEMA_ERROR
+              description: Error type
+            code:
+              type: string
+              description: Describes an error object
+              example: 8678
+            path:
+              type: string
+              description: Path to json schema generating the error. Used only during json schema validation errors
+            message:
+              type: string
+              description: Human readable message describing the error
+              example: Invalid Request
+          required:
+            - type
+            - code
+      required:
+        - error
+    ReasonResponse:
+      description: Describes the reasons of issue
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            properties:
+              reason_id:
+                $ref: '#/components/schemas/Reason/properties/reason_id'
+              reason:
+                $ref: '#/components/schemas/Reason/properties/reason'
+            required:
+              - reason_id
+              - reason
+    IssuePostReq:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            order_id:
+              $ref: '#/components/schemas/Order/properties/order_id'
+            reason_id:
+              $ref: '#/components/schemas/Reason/properties/reason_id'
+            timestamp:
+              $ref: '#/components/schemas/Issue/properties/timestamp'
+            issue_message:
+              $ref: '#/components/schemas/Issue/properties/issue_message'
+            request_for:
+              $ref: '#/components/schemas/Issue/properties/request_for'
+            preference_contact:
+              type: string
+              example: MOBILE
+              description: preference contact detail
+              enum:
+               - MOBILE
+               - EMAIL
+            callback_url:
+              type: string
+              format: uri
+              example: 'https://myserver/track/issue'
+              description: callback function url
+          required:
+            - order_id
+            - reason_id
+            - timestamp
+            - issue_message
+            - request_for
+            - callback_url
+      required:
+        - message
+    GetAllIssueTrackResponse:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            properties:
+              issue_id:
+                $ref: '#/components/schemas/Issue/properties/issue_id'
+              issue_status:
+                $ref: '#/components/schemas/Issue/properties/issue_status'
+              order_id:
+                $ref: '#/components/schemas/Order/properties/order_id'
+              timestamp:
+                $ref: '#/components/schemas/Issue/properties/timestamp'
+            required:
+              - issue_status
+              - issue_id
+              - order_id
+              - timestamp
+      required:
+        - message
+    IssueTrackResponse:
+      type: object
+      properties:
+        message:
+          type: array
+          items:
+            properties:
+              issue_id:
+                $ref: '#/components/schemas/Issue/properties/issue_id'
+              issue_status:
+                $ref: '#/components/schemas/Issue/properties/issue_status'
+              order_id:
+                $ref: '#/components/schemas/Order/properties/order_id'
+              timestamp:
+                $ref: '#/components/schemas/Issue/properties/timestamp'
+              reason:
+                $ref: '#/components/schemas/Reason/properties/reason'
+              request_for:
+                $ref: '#/components/schemas/Issue/properties/request_for'
+              perference_contact:
+                type: string
+                enum:
+                  - MOBILE
+                  - EMAIL
+                example: EMAIL
+                description: preference contact detail
+              issue_message:
+                $ref: '#/components/schemas/Issue/properties/issue_message'
+              assigned_to:
+                $ref: '#/components/schemas/Person'
+            required:
+              - issue_status
+              - issue_id
+              - order_id
+              - timestamp
+              - reason
+              - request_for
+              - issue_message
+              - assigned_to
+      required:
+        - message
+    Person:
+      description: Person schema details
+      type: object
+      properties:
+        person_id:
+          type: string
+          description: Unique identifier for Person schema
+          example: 193
+        name:
+          type: string
+          description: Name of the person
+          example: Alan
+        issue_assigned_id:
+          type: string
+          description: Issue assigned to the person
+          example: 292
+        timestamp:
+          type: string
+          format: date-time
+          example: '2022-08-30T17:22:38'
+          description: Timestap for person
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
