@@ -4,6 +4,20 @@ info:
   description: API flow for raiseing, tracking and getting specific information regaring the issue raised and order related to that issue.
   version: 1.0.0
 
+servers:
+  - url: https://{microservice}.e-commerce.com:{port}/v2
+    variables:
+      microservice:
+        enum:
+          - 'test'
+          - 'issues'
+        default: 'issues'
+      port:
+        enum:
+          - '443'
+          - '8443'
+        default: '443'
+
 paths:
   /reason/:
     get:
