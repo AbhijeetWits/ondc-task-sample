@@ -398,27 +398,46 @@ components:
       properties:
         error:
           type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - CONTEXT_ERROR
-                - DOMAIN_ERROR
-                - POLICY_ERROR
-                - JSON_SCHEMA_ERROR
-              description: Error type
-            code:
-              type: string
-              description: Describes an error object
-              example: 8678
-            path:
-              type: string
-              description: Path to json schema generating the error. Used only during json schema validation errors
-            message:
-              type: string
-              description: Human readable message describing the error
-              example: Invalid Request
-          required:
+          oneOf:
+          - properties:
+              type:
+                type: string
+                enum:
+                  - DOMAIN_ERROR
+                  - POLICY_ERROR
+                  - JSON_SCHEMA_ERROR
+                description: Error type
+              code:
+                type: string
+                description: Describes an error object
+                example: 8678
+              path:
+                type: string
+                description: Path to json schema generating the error. Used only during json schema validation errors
+              message:
+                type: string
+                description: Human readable message describing the error
+                example: Invalid Request
+            required:
+            - type
+          - properties:
+              type:
+                type: string
+                enum:
+                  - CONTEXT_ERROR
+                description: Error type
+              code:
+                type: string
+                description: Describes an error object
+                example: 8678
+              path:
+                type: string
+                description: Path to json schema generating the error. Used only during json schema validation errors
+              message:
+                type: string
+                description: Human readable message describing the error
+                example: Invalid Request
+            required:
             - type
             - code
       required:
